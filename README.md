@@ -22,7 +22,7 @@ The general pattern is to `source("some/directory/traj-converters/src/R/method_c
 
 Change *method* to one listed above.
 
-Each *method*_convert.r file has two methods for writing method outputs to a common format.
+Each *method*_convert.r file has two functions for writing method outputs to a common format.
 
 `write_cell_x_branch(...)`
 
