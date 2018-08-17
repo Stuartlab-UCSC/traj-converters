@@ -24,6 +24,17 @@ Change *method* to one listed above.
 
 Each *method*_convert.r file has two functions for writing method outputs to a common format.
 
-`write_cell_x_branch(...)`
+`write_cell_x_branch(TI_obj, file)` writes a tab delimited matrix to *file* with empty spaces representing NA.
 
-`write_common_json(...)`
+`write_common_json(TI_obj, file)` writes json of the common format to *file*.  
+
+In most cases *TI_obj* is the R object returned by the trajectory inference method. 
+
+Methods that do not return an object require multiple parameters. The parameter names mimic the names of the TI method's function calls used to produce those values. e.g. The TI method slicer has a cell_order() function used for pseudotime assignment. Slicer's converter functions have a parameter *cell_ordering* needed to make the common formats.  
+
+Each *method*_convert.r file also has two functions for creating the R analog data structure.
+
+`to_cell_x_branch(TI_obj)` returns a cell x branch matrix with values representing pseudotime assignment. 
+
+`to_common_list(TI_obj)` returns a list with the schema of the common json format.
+
