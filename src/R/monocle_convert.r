@@ -22,7 +22,7 @@ write_cell_x_branch <- function(monocle_obj, filepath){
 to_common_list <- function(monocle_obj){
   graph <- make_graph(monocle_obj)
   pseudotime <- monocle_obj$Pseudotime
-  branches <- monocle_obj$State
+  branch_assignment <- monocle_obj$State
   cell_names <- sampleNames(monocle_obj@phenoData)
 
   cell_names <- sampleNames(monocle_obj@phenoData)
@@ -30,7 +30,7 @@ to_common_list <- function(monocle_obj){
     stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
   }
   names(pseudotime)<- cell_names
-  names(branches) <- cell_names
+  names(branch_assignment) <- cell_names
 
   mst <- igraph::graph_from_edgelist(igraph::as_edgelist(minSpanningTree(monocle_obj)), directed =F)
 
@@ -56,12 +56,12 @@ to_common_list <- function(monocle_obj){
     edgeIds <- c(edgeIds, edge_id)
     # Figure out what cells belong to this branch
     path<-names(unlist(igraph::get.shortest.paths(mst,from=node1,to=node2)$vpath))
-    branch.number <- Mode(branches[path])
+    branch.number <- Mode(branch_assignment[path])
 
-    n_branch_cells <- sum(branches == branch.number)
+    n_branch_cells <- sum(branch_assignment == branch.number)
     edgeIdCM <- c(edgeIdCM, rep(edge_id, n_branch_cells))
-    cellIdCM <- c(cellIdCM, names(branches[branches == branch.number]))
-    pseudotimeCM <- c(pseudotimeCM, pseudotime[branches == branch.number])
+    cellIdCM <- c(cellIdCM, names(branch_assignment[branch_assignment == branch.number]))
+    pseudotimeCM <- c(pseudotimeCM, pseudotime[branch_assignment == branch.number])
   }
 
   output <- list(
