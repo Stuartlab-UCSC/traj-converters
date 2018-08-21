@@ -35,7 +35,7 @@ import json
 from numpy.linalg import norm
 
 
-def make_dict(scimitar_output=None,diff_map=None):
+def make_dict(scimitar_output=None, diff_map=None):
     """
     Convert SCIMITAR output and probability assignment to common
     JSON format.
@@ -47,25 +47,29 @@ def make_dict(scimitar_output=None,diff_map=None):
     common JSON format.
     """
     common_dict = {
-        'nodes': {
-            'nodeId': _nodeId(scimitar_output),
-            'dimReduct': _dimReduct(scimitar_output).tolist()
-        },
-        'edges': {
-             'edgeId': _edgeId(scimitar_output)[0],
-             'nodeId1': _edgeId(scimitar_output)[1],
-             'nodeId2': _edgeId(scimitar_output)[2],
-             'direction': _direction(scimitar_output)
-         },
-         'cellMapping': {
-             'cellId': _cellMapping(scimitar_output, diff_map)[0],
-             'branchId': _cellMapping(scimitar_output, diff_map)[1],
-             'psuedotime': _psuedotime(diff_map),
-             'curveDistance': _cellMapping(
-                 scimitar_output,
-                 diff_map
-             )[2]
-        }
+        'nodes':
+            {
+                'nodeId': _nodeId(scimitar_output),
+                'dimReduct': _dimReduct(scimitar_output).tolist()
+            },
+        'edges':
+            {
+                'edgeId': _edgeId(scimitar_output)[0],
+                'nodeId1': _edgeId(scimitar_output)[1],
+                'nodeId2': _edgeId(scimitar_output)[2],
+                'direction': _direction(scimitar_output)
+            },
+        'cellMapping':
+            {
+                'cellId':
+                    _cellMapping(scimitar_output, diff_map)[0],
+                'branchId':
+                    _cellMapping(scimitar_output, diff_map)[1],
+                'psuedotime':
+                    _psuedotime(diff_map),
+                'curveDistance':
+                    _cellMapping(scimitar_output, diff_map)[2]
+            }
     }
     return common_dict
 
@@ -78,6 +82,7 @@ def save_to_json(common_dict, path):
     
     :return None
     """
+
     class MyEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, np.integer):
@@ -102,9 +107,7 @@ def _nodeId(scimitar_output):
     
     :return A list of cellIds mapping to nodeIds.
     """
-    nodeId = list(
-        set(np.unique(scimitar_output[2]).tolist())
-    )
+    nodeId = list(set(np.unique(scimitar_output[2]).tolist()))
     return nodeId
 
 
@@ -142,11 +145,11 @@ def _direction(scimitar_output):
     """
     A list of 'undirected'.
     """
-    direction = ['undirected']*len(_edgeId(scimitar_output)[0])
+    direction = ['undirected'] * len(_edgeId(scimitar_output)[0])
     return direction
 
 
-def _cellMapping(scimitar_output,diff_map):
+def _cellMapping(scimitar_output, diff_map):
     """
     This function gets each cell name and assign it to it's closest
     edge in the branching tree. SCIMITAR assign each cell to a node by
@@ -163,13 +166,10 @@ def _cellMapping(scimitar_output,diff_map):
 
     #Get distance of cells to trajectory branches
     array_dist = np.zeros(
-        shape=(
-            len(diff_map),
-            len(_edgeId(scimitar_output)[0])
-        )
+        shape=(len(diff_map), len(_edgeId(scimitar_output)[0]))
     )
 
-    i=0
+    i = 0
     # Iterate over each cell and find distance of each cell to each
     # edge (orthogonal projection).
     for index, row in diff_map.iterrows():
@@ -180,7 +180,7 @@ def _cellMapping(scimitar_output,diff_map):
             node1, node2 = edge
             p1, p2 = _dimReduct(scimitar_output)[node1], \
                      _dimReduct(scimitar_output)[node2][1]
-            d = norm(np.cross(p2-p1, p1-p3))/norm(p2-p1)
+            d = norm(np.cross(p2 - p1, p1 - p3)) / norm(p2 - p1)
             dist_list.append(d)
 
         array_dist[i] = dist_list
@@ -193,7 +193,7 @@ def _cellMapping(scimitar_output,diff_map):
         id = int(np.argmin(array_dist[i, :]))
         branchId.append(_edgeId(scimitar_output)[0][id])
         curveDistance.append(np.min(array_dist[i, :]).item())
-            
+
     return cellId, branchId, curveDistance
 
 
@@ -201,8 +201,5 @@ def _psuedotime(diff_map):
     """
     Return list of 'NA's. No pusedotime to convert.
     """
-    psuedotime = ['NA']*len(diff_map)
+    psuedotime = ['NA'] * len(diff_map)
     return psuedotime
-
-
-
