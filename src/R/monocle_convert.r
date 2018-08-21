@@ -1,8 +1,8 @@
 # author: duncmc831@gmail.com
 # Assume monocle_obj$State directly maps to branch assignment.
-# The cell names (ids) are from monocle_obj$cellPairwiseDistances,
-# its assumed that $Pseudotime and $State and ordered the same.
-# 
+# The cell names (ids) are from sampleNames(monocle_obj@phenoData).
+# Its assumed that $Pseudotime and $State and ordered the same.
+#
 # Graph topology is determined by reducing the
 # minimumSpanningTree(monocle_object) to end nodes and branch points.
 
@@ -23,12 +23,17 @@ to_common_list <- function(monocle_obj){
   graph <- make_graph(monocle_obj)
   pseudotime <- monocle_obj$Pseudotime
   branches <- monocle_obj$State
-  # Use the names of pairwise distances to name the vectors.
-  names(pseudotime)<-  colnames(monocle_obj@cellPairwiseDistances)
-  names(branches) <- colnames(monocle_obj@cellPairwiseDistances)
-  
+  cell_names <- sampleNames(monocle_obj@phenoData)
+
+  cell_names <- sampleNames(monocle_obj@phenoData)
+  if (length(cell_names) != length(pseudotime) || length(cell_names) != length(branch_assignment)){
+    stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
+  }
+  names(pseudotime)<- cell_names
+  names(branches) <- cell_names
+
   mst <- igraph::graph_from_edgelist(igraph::as_edgelist(minSpanningTree(monocle_obj)), directed =F)
-  
+
   Mode <- function(x) {
     ux <- unique(x)
     ux[which.max(tabulate(match(x, ux)))]
@@ -52,13 +57,13 @@ to_common_list <- function(monocle_obj){
     # Figure out what cells belong to this branch
     path<-names(unlist(igraph::get.shortest.paths(mst,from=node1,to=node2)$vpath))
     branch.number <- Mode(branches[path])
-    
+
     n_branch_cells <- sum(branches == branch.number)
     edgeIdCM <- c(edgeIdCM, rep(edge_id, n_branch_cells))
     cellIdCM <- c(cellIdCM, names(branches[branches == branch.number]))
     pseudotimeCM <- c(pseudotimeCM, pseudotime[branches == branch.number])
   }
-  
+
   output <- list(
     nodes= list(nodeId=nodes),
     egdes= list(
@@ -79,19 +84,24 @@ to_common_list <- function(monocle_obj){
 to_cell_x_branch <- function(monocle_obj){
   pseudotime <- monocle_obj$Pseudotime
   branch_assignment <- monocle_obj$State
-  names(pseudotime)<-  colnames(monocle_obj@cellPairwiseDistances)
-  names(branch_assignment) <- colnames(monocle_obj@cellPairwiseDistances)
-  
+
+  cell_names <- sampleNames(monocle_obj@phenoData)
+  if (length(cell_names) != length(pseudotime) || length(cell_names) != length(branch_assignment)){
+    stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
+  }
+  names(pseudotime)<-  cell_names
+  names(branch_assignment) <- cell_names
+
   # TODO: implementation could be improved.
   branch_ids <- unique(branch_assignment)
   branches_list <- list()
   for (branch in branch_ids){
     cells_not_on_branch <- names(branch_assignment[branch_assignment != branch])
+    cells_not_on_branch <- cells_not_on_branch[!is.na(cells_not_on_branch)]
     tmp_pseudo <- pseudotime
     tmp_pseudo[cells_not_on_branch] <- NA
     branches_list[[paste(c("branch_",branch),collapse = "")]] <- tmp_pseudo
   }
-  length(branches_list)
   cell_x_branch <- data.frame(branches_list, row.names = names(pseudotime))
   return(cell_x_branch)
 }
@@ -117,7 +127,6 @@ make_graph <- function(monocle_obj){
   #add branch-branch edgess
   branch.combo <- combn(branches, 2)
   for (col in 1:ncol(branch.combo)){
-    #print(branch.combo[,col])
     b1<- branch.combo[1,col]
     b2<- branch.combo[2,col]
     path<-unlist(igraph::get.shortest.paths(graph,from=b1,to=b2)$vpath)
