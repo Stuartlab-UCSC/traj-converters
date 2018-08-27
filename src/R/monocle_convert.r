@@ -23,21 +23,49 @@ to_common_list <- function(monocle_obj){
   graph <- make_graph(monocle_obj)
   pseudotime <- monocle_obj$Pseudotime
   branch_assignment <- monocle_obj$State
-  cell_names <- sampleNames(monocle_obj@phenoData)
+  cell_names <- row.names(monocle_obj@auxOrderingData[["DDRTree"]]$pr_graph_cell_proj_closest_vertex)
 
-  cell_names <- sampleNames(monocle_obj@phenoData)
   if (length(cell_names) != length(pseudotime) || length(cell_names) != length(branch_assignment)){
     stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
   }
+  
   names(pseudotime)<- cell_names
   names(branch_assignment) <- cell_names
-
+  
+  # n<- names(branch_assignment)[1:110]
+  # MST node to cell id mapping.
+  id_to_mst_node <- monocle_obj@auxOrderingData[["DDRTree"]]$pr_graph_cell_proj_closest_vertex
+  id_to_mst_node[,1] <- sapply(id_to_mst_node[,1], function(x){paste(c("Y_", x), collapse = "")})
+  mst_node_to_ids <- list()
+  for (node_name in unique(id_to_mst_node[,1])) {
+    mst_node_to_ids[[node_name]] <- names(id_to_mst_node[,1][id_to_mst_node[,1] == node_name])
+  }
+  
   mst <- igraph::graph_from_edgelist(igraph::as_edgelist(minSpanningTree(monocle_obj)), directed =F)
 
-  Mode <- function(x) {
-    ux <- unique(x)
-    ux[which.max(tabulate(match(x, ux)))]
+  which_branch <- function(path_vertices, mst_node_to_ids, branch_assignment) {
+    # returns which branch a path maps too.
+    # if this path has ALL the cell ids in a branch we assume its the branch.
+    total_counts <- summary(branch_assignment)
+    
+    # get all the cells along the path.
+    cell_ids_in_path <- c()
+    for (node in path_vertices){
+      cell_ids_in_path <- c(cell_ids_in_path, mst_node_to_ids[[node]])  
+    }
+     
+    count_on_branch <- summary(branch_assignment[cell_ids_in_path])
+    
+    branch <- which(total_counts[names(count_on_branch)] == count_on_branch, arr.ind = FALSE)
+    
+    indeterminant_number_of_branches <- length(branch) != 1
+    if (indeterminant_number_of_branches){
+      stop("The branch finding method was indeterminant.")
+    }
+    
+    return(unname(branch)[1])
   }
+  
   nodes <- igraph::V(graph)$name
   edges <- igraph::as_edgelist(graph)
   edgeIds <- c()
@@ -54,9 +82,10 @@ to_common_list <- function(monocle_obj){
     nodeIds2 <- c(nodeIds2, node1)
     edge_id <- paste(c(node1, node2), collapse="_")
     edgeIds <- c(edgeIds, edge_id)
-    # Figure out what cells belong to this branch
+    # mst nodes along the path
     path<-names(unlist(igraph::get.shortest.paths(mst,from=node1,to=node2)$vpath))
-    branch.number <- Mode(branch_assignment[path])
+    # the branch the path represents
+    branch.number <- which_branch(path, mst_node_to_ids, branch_assignment)
 
     n_branch_cells <- sum(branch_assignment == branch.number)
     edgeIdCM <- c(edgeIdCM, rep(edge_id, n_branch_cells))
