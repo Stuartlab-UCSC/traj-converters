@@ -8,12 +8,12 @@
 # A star topology is assumed to keep heuristics at a minimum.
 # I assume the values of dpt$DPT1 are a psuedotime assignment.
 
-write_common_json <- function(dpt_obj, filepath){
-  write(jsonlite::toJSON(to_common_list(dpt_obj), pretty = T), file = filepath)
+write_common_json <- function(dpt_obj, file){
+  write(jsonlite::toJSON(to_common_list(dpt_obj), pretty = T), file = file)
 }
 
-write_cell_x_branch <- function(dpt_obj, filepath){
-  write.table(to_cell_x_branch(dpt_obj), file=filepath, sep = "\t",na = '')
+write_cell_x_branch <- function(dpt_obj, file){
+  write.table(to_cell_x_branch(dpt_obj), file = file, sep = "\t",na = '')
 }
 
 to_cell_x_branch <- function(dpt_obj){

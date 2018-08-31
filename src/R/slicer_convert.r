@@ -1,12 +1,12 @@
 
 
-write_common_json <- function(branch_assignment, cell_ordering, cell_names, filepath){
-  write(jsonlite::toJSON(to_common_list(branch_assignment, cell_ordering, cell_names), pretty = T), file = filepath)
+write_common_json <- function(branch_assignment, cell_ordering, cell_names, file){
+  write(jsonlite::toJSON(to_common_list(branch_assignment, cell_ordering, cell_names), pretty = T), file = file)
 }
 
 
-write_cell_x_branch <- function(branch_assignment, cell_ordering, cell_names, filepath){
-  write.table(to_cell_x_branch(branch_assignment, cell_ordering, cell_names), file=filepath, sep="\t", na='')
+write_cell_x_branch <- function(branch_assignment, cell_ordering, cell_names, file){
+  write.table(to_cell_x_branch(branch_assignment, cell_ordering, cell_names), file = file, sep="\t", na='')
 }
 
 

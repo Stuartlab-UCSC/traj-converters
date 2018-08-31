@@ -9,13 +9,13 @@
 library(monocle)
 library(jsonlite)
 
-write_common_json <- function(monocle_obj, filepath){
-  write(jsonlite::toJSON(to_common_list(monocle_obj), pretty = T), file = filepath)
+write_common_json <- function(monocle_obj, file){
+  write(jsonlite::toJSON(to_common_list(monocle_obj), pretty = T), file = file)
 }
 
 
-write_cell_x_branch <- function(monocle_obj, filepath){
-  write.table(to_cell_x_branch(monocle_obj),sep="\t", file=filepath, na = '')
+write_cell_x_branch <- function(monocle_obj, file){
+  write.table(to_cell_x_branch(monocle_obj),sep="\t", file=file, na = '')
 }
 
 
@@ -24,10 +24,6 @@ to_common_list <- function(monocle_obj){
   pseudotime <- monocle_obj$Pseudotime
   branch_assignment <- monocle_obj$State
   cell_names <- row.names(monocle_obj@auxOrderingData[["DDRTree"]]$pr_graph_cell_proj_closest_vertex)
-
-  if (length(cell_names) != length(pseudotime) || length(cell_names) != length(branch_assignment)){
-    stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
-  }
   
   names(pseudotime)<- cell_names
   names(branch_assignment) <- cell_names
