@@ -23,7 +23,7 @@ to_common_list <- function(monocle_obj){
   graph <- make_graph(monocle_obj)
   pseudotime <- monocle_obj$Pseudotime
   branch_assignment <- monocle_obj$State
-  cell_names <- row.names(monocle_obj@auxOrderingData[["DDRTree"]]$pr_graph_cell_proj_closest_vertex)
+  cell_names <- colnames(monocle_obj)
   
   names(pseudotime)<- cell_names
   names(branch_assignment) <- cell_names
@@ -110,7 +110,7 @@ to_cell_x_branch <- function(monocle_obj){
   pseudotime <- monocle_obj$Pseudotime
   branch_assignment <- monocle_obj$State
 
-  cell_names <- sampleNames(monocle_obj@phenoData)
+  cell_names <- colnames(monocle_obj)
   if (length(cell_names) != length(pseudotime) || length(cell_names) != length(branch_assignment)){
     stop("Error: Are the sampleNames defined in your CellDataSet? sampleNames(monocle_obj@phenoData) is not the correct length.")
   }
