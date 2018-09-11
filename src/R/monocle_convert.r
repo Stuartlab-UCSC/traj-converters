@@ -163,7 +163,10 @@ make_graph <- function(monocle_obj){
       b1<- branch.combo[1,col]
       b2<- branch.combo[2,col]
       path<-unlist(igraph::get.shortest.paths(graph,from=b1,to=b2)$vpath)
-      if (sum(!is.na(path[branches])) == 2) { # there are no other branches on that path
+      number_of_branches_on_path <- sum(!is.na(path[branches]))
+      only_two_branches_on_path <- number_of_branches_on_path == 2 
+      if (only_two_branches_on_path) {
+        # Add it too the graph
         edges_to_add <- c(edges_to_add, b1, b2)
       }
     }
