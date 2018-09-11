@@ -144,7 +144,10 @@ make_graph <- function(monocle_obj){
   for (branch in branches){
     for (end.node in ends){
       path<-unlist(igraph::get.shortest.paths(graph,from=branch,to=end.node)$vpath)
-      if (sum(!is.na(path[branches])) == 1) { # there are no other branches on that path
+      # See whether this edge needs to be added to the reduced graph.
+      not_already_connected <- length(path) > 2
+      only_one_branch_on_path <- sum(!is.na(path[branches])) == 1
+      if (only_one_branch_on_path && not_already_connected) {
         edges_to_add <- c(edges_to_add, branch, end.node)
       }
     }
