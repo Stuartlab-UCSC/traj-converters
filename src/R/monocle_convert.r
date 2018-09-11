@@ -149,16 +149,23 @@ make_graph <- function(monocle_obj){
       }
     }
   }
+  
   #add branch-branch edgess
-  branch.combo <- combn(branches, 2)
-  for (col in 1:ncol(branch.combo)){
-    b1<- branch.combo[1,col]
-    b2<- branch.combo[2,col]
-    path<-unlist(igraph::get.shortest.paths(graph,from=b1,to=b2)$vpath)
-    if (sum(!is.na(path[branches])) == 2) { # there are no other branches on that path
-      edges_to_add <- c(edges_to_add, b1, b2)
+  more_than_one_branch <- length(branches) > 1
+  if (more_than_one_branch){
+    # If the path between two branches doesn't have another branch
+    # in it then connect it together.
+    branch.combo <- combn(branches, 2)
+    for (col in 1:ncol(branch.combo)){
+      b1<- branch.combo[1,col]
+      b2<- branch.combo[2,col]
+      path<-unlist(igraph::get.shortest.paths(graph,from=b1,to=b2)$vpath)
+      if (sum(!is.na(path[branches])) == 2) { # there are no other branches on that path
+        edges_to_add <- c(edges_to_add, b1, b2)
+      }
     }
   }
+  
   graph <- igraph::add.edges(graph, edges_to_add)
   # Then we remove all the other nodes.
   nodes_to_remove <- middles
