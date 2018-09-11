@@ -136,7 +136,7 @@ make_graph <- function(monocle_obj){
   # Hack to copy the graph.
   graph <- igraph::graph_from_edgelist(igraph::as_edgelist(minSpanningTree(monocle_obj)), directed =F)
   degrees <- igraph::degree(graph)
-  branches <- names(degrees[degrees==3])
+  branches <- names(degrees[degrees>=3])
   ends <- names(degrees[degrees==1])
   middles <- names(degrees[degrees==2])
   edges_to_add <- c()
