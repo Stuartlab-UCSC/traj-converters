@@ -53,10 +53,11 @@ to_common_list <- function(monocle_obj){
     if(no_cells_in_path) {
       return(NA) 
     }
-     
-    count_on_branch <- summary(branch_assignment[cell_ids_in_path])
     
-    branch <- which(total_counts[names(count_on_branch)] == count_on_branch, arr.ind = FALSE)
+    count_on_branch <- summary(branch_assignment[cell_ids_in_path])
+    # Find the branch that has all the cells in the path on it,
+    # ignoring branches with count of 0
+    branch <- which(total_counts[names(count_on_branch)] == count_on_branch & total_counts[names(count_on_branch)] != 0, arr.ind = FALSE)
     
     indeterminant_number_of_branches <- length(branch) != 1
     if (indeterminant_number_of_branches){
