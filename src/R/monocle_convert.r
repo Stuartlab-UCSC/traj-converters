@@ -38,7 +38,7 @@ to_common_list <- function(monocle_obj){
   }
   
   mst <- igraph::graph_from_edgelist(igraph::as_edgelist(minSpanningTree(monocle_obj)), directed =F)
-
+  
   which_branch <- function(path_vertices, mst_node_to_ids, branch_assignment) {
     # returns which branch a path maps too.
     # if this path has ALL the cell ids in a branch we assume its the branch.
@@ -48,6 +48,10 @@ to_common_list <- function(monocle_obj){
     cell_ids_in_path <- c()
     for (node in path_vertices){
       cell_ids_in_path <- c(cell_ids_in_path, mst_node_to_ids[[node]])  
+    }
+    no_cells_in_path <- length(cell_ids_in_path) == 0
+    if(no_cells_in_path) {
+      return(NA) 
     }
      
     count_on_branch <- summary(branch_assignment[cell_ids_in_path])
@@ -82,13 +86,14 @@ to_common_list <- function(monocle_obj){
     path<-names(unlist(igraph::get.shortest.paths(mst,from=node1,to=node2)$vpath))
     # the branch the path represents
     branch.number <- which_branch(path, mst_node_to_ids, branch_assignment)
-
-    n_branch_cells <- sum(branch_assignment == branch.number)
-    edgeIdCM <- c(edgeIdCM, rep(edge_id, n_branch_cells))
-    cellIdCM <- c(cellIdCM, names(branch_assignment[branch_assignment == branch.number]))
-    pseudotimeCM <- c(pseudotimeCM, pseudotime[branch_assignment == branch.number])
+    if (!is.na(branch.number)){
+      n_branch_cells <- sum(branch_assignment == branch.number)
+      edgeIdCM <- c(edgeIdCM, rep(edge_id, n_branch_cells))
+      cellIdCM <- c(cellIdCM, names(branch_assignment[branch_assignment == branch.number]))
+      pseudotimeCM <- c(pseudotimeCM, pseudotime[branch_assignment == branch.number])
+    }
   }
-
+  
   output <- list(
     nodes= list(nodeId=nodes),
     egdes= list(
