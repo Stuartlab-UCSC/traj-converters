@@ -24,10 +24,10 @@ Our examples start from the In [21] of that notebook.
 >>> wb.run_wishbone(start_cell='W30258', components_list=[1, 2], num_waypoints=150)
 
 # Output the cell x branch matrix to a file:
->>> output_cell_x_branch(wb, "path/to/output.tab")
+>>> write_cell_x_branch(wb, "path/to/output.tab")
 
 # Output the common json format to a file:
->>> output_common_json(wb, "path/to/output.json")
+>>> write_common_json(wb, "path/to/output.json")
 
 # Make the cell x branch pandas dataframe:
 >>> cellXbranch = to_cell_x_branch(wb)
